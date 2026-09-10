@@ -4,6 +4,7 @@ import pixel.Route;
 
 /**
  * Rotaları tutar ve gelen isteği en uygun rotayla eşler.
+ * Holds routes and resolves an incoming request to the best match.
  */
 class Router {
     public var routes:Array<Route>;

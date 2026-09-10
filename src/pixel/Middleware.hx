@@ -2,8 +2,9 @@ package pixel;
 
 /**
  * Middleware zincirindeki tek adım.
+ * A single step in the middleware chain.
  *
- * Handler imzası:
+ * Handler imzası / handler signature:
  * `(req, res, next) -> Void`
  */
 class Middleware {

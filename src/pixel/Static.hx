@@ -4,10 +4,14 @@ import haxe.io.Bytes;
 
 /**
  * Statik dosya sunucusu.
+ * Static file server.
  *
- * `app.static("public")` ile kökte, `app.static("public", "/assets")` ile bir
+ * `app.serveStatic("public")` ile kökte, `app.serveStatic("public", "/assets")` ile bir
  * prefix altında hizmet verir. `..` ile dizin dışına çıkış denemelerini engeller.
+ * Serves from the root with `app.serveStatic("public")` or under a prefix with
+ * `app.serveStatic("public", "/assets")`. Blocks directory traversal via `..`.
  * Dosya okuma `Platform` üzerinden yapıldığı için tüm hedeflerde çalışır.
+ * File reads go through `Platform`, so it works on all targets.
  */
 class Static {
     public static function serve(req:Request, res:Response, root:String, prefix:String):Bool {
@@ -27,7 +31,7 @@ class Static {
         if (rel.length > 0 && rel.charAt(0) == "/") rel = rel.substr(1);
         if (rel == "") rel = "index.html";
 
-        // dizin yükselişini engelle
+        // dizin yükselişini engelle / block directory traversal
         for (part in rel.split("/")) {
             if (part == "..") return false;
         }

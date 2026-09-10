@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pixel Api 🎨</title>
+    <title>Pixel Api</title>
     <style>
         :root {
             --bg: #0f1117;
@@ -27,13 +27,14 @@
             border: 1px solid #2a3040;
             border-radius: 16px;
             padding: 40px;
-            max-width: 480px;
+            max-width: 520px;
             text-align: center;
             box-shadow: 0 20px 60px rgba(0,0,0,.45);
         }
-        h1 { font-size: 28px; margin-bottom: 8px; }
+        h1 { font-size: 30px; margin-bottom: 8px; }
         h1 span { color: var(--accent); }
-        p { color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+        p { color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+        .tr { color: var(--text); }
         code {
             background: #0f1117;
             color: #7fd6ff;
@@ -51,16 +52,31 @@
             font-size: 13px;
             margin-bottom: 20px;
         }
+        .divider {
+            border: none;
+            border-top: 1px solid #2a3040;
+            margin: 24px 0;
+        }
     </style>
 </head>
 <body>
     <div class="card">
         <div class="badge">pixel-haxe</div>
-        <h1>Pixel <span>Api</span> 🎨</h1>
-        <p>Hafif ve çok hedefli Haxe API mikro-framework'ü.<br>
-           Bu statik sayfa <code>app.static("public")</code> ile servis ediliyor.</p>
-        <p>Rotaları deneyin: <br>
-           <code>GET /api/users</code> &nbsp;·&nbsp; <code>GET /health</code></p>
+        <h1>Pixel <span>Api</span></h1>
+
+        <p class="tr">
+            Hafif ve çok hedefli Haxe API mikro-framework'ü.<br>
+            Bu statik sayfa <code>app.serveStatic("public")</code> ile servis ediliyor.<br>
+            Deneyin: <code>GET /api/users</code> &nbsp;·&nbsp; <code>GET /health</code>
+        </p>
+
+        <hr class="divider">
+
+        <p>
+            A lightweight, multi-target Haxe API micro-framework.<br>
+            This static page is served via <code>app.serveStatic("public")</code>.<br>
+            Try: <code>GET /api/users</code> &nbsp;·&nbsp; <code>GET /health</code>
+        </p>
     </div>
 </body>
 </html>

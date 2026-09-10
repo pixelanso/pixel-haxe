@@ -11,7 +11,9 @@ extern class NHttp {
 
 /**
  * js (Node.js) hedefi için HTTP sürücüsü.
+ * HTTP driver for the js (Node.js) target.
  * Node'un `node:http` modülünü doğrudan kullanır; ayrı haxelib gerektirmez.
+ * Uses Node's `node:http` module directly; no extra haxelib required.
  */
 class NodeServer {
     public static function run(app:Pixel, port:Int = 8080, host:String = "0.0.0.0"):Void {

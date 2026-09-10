@@ -2,9 +2,12 @@ package pixel;
 
 /**
  * Gelen isteği temsil eder.
+ * Represents an incoming request.
  *
  * Metot, path, query string, header'lar, path parametreleri ve
  * ham (raw) body bilgisini taşır. JSON body `jsonBody()` ile ayrıştırılır.
+ * Carries method, path, query string, headers, path params and raw body.
+ * The JSON body is parsed with `jsonBody()`.
  */
 class Request {
     public var method:String;

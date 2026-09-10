@@ -5,9 +5,10 @@ import pixel.Platform;
 
 /**
  * Örnek uygulama — Pixel Api'ın kullanımını gösterir.
+ * Example app — demonstrates Pixel Api usage.
  *
- * Derle:    haxe build-node.hxml
- * Çalıştır: node bin/Node/server.js
+ * Derle / Compile:    haxe build-node.hxml
+ * Çalıştır / Run:     node bin/Node/server.js
  */
 class Main {
     static var users:Array<Dynamic> = [
@@ -19,21 +20,21 @@ class Main {
     static function main() {
         var app = Pixel.create();
 
-        // 1) Global middleware — istek logu
+        // 1) Global middleware — istek logu / request logging
         app.use(function(req:Request, res:Response, next:Void->Void) {
             Platform.println("--> [" + req.method + "] " + req.path);
             next();
         });
 
-        // 2) CORS (herkese açık ve preflight dahil)
+        // 2) CORS (herkese açık ve preflight dahil / open and including preflight)
         app.cors();
 
-        // 3) Rotalar
+        // 3) Rotalar / Routes
         app.get("/", function(req, res) {
             res.json({
                 name: "Pixel Api",
                 version: "0.1.0",
-                description: "Hafif ve cok hedefli Haxe API mikro-framework'unun ornek uygulamasi",
+                description: "Hafif ve cok hedefli Haxe API mikro-framework'unun ornek uygulamasi / Sample app for the lightweight, multi-target Haxe API micro-framework",
                 endpoints: {
                     root: "GET /",
                     health: "GET /health",
@@ -62,18 +63,18 @@ class Main {
                     return;
                 }
             }
-            res.status(404).json({error: "User not found", id: id});
+            res.status(404).json({error: "User not found / Kullanici bulunamadi", id: id});
         });
 
         app.post("/api/users", function(req, res) {
             var body = req.jsonBody();
             if (body == null) {
-                res.status(400).json({error: "Gecerli bir JSON body gonderilmeli"});
+                res.status(400).json({error: "Gecerli bir JSON body gonderilmeli / A valid JSON body is required"});
                 return;
             }
             var name = Reflect.field(body, "name");
             if (name == null || name == "") {
-                res.status(422).json({error: "'name' alani zorunludur"});
+                res.status(422).json({error: "'name' alani zorunludur / 'name' field is required"});
                 return;
             }
             var u = {id: Std.string(users.length + 1), name: name, role: "user"};
@@ -92,7 +93,7 @@ class Main {
                     return;
                 }
             }
-            res.status(404).json({error: "User not found", id: id});
+            res.status(404).json({error: "User not found / Kullanici bulunamadi", id: id});
         });
 
         app.delete("/api/users/:id", function(req, res) {
@@ -104,21 +105,21 @@ class Main {
                     return;
                 }
             }
-            res.status(404).json({error: "User not found", id: id});
+            res.status(404).json({error: "User not found / Kullanici bulunamadi", id: id});
         });
 
-        // Kayıtlı olmayan rota -> 404
+        // Kayıtlı olmayan rota -> 404 / Unregistered route -> 404
         app.all("*", function(req, res) {
-            res.status(404).json({error: "Not Found", path: req.path});
+            res.status(404).json({error: "Not Found / Bulunamadi", path: req.path});
         });
 
-        // 4) Statik dosyalar (public/)
+        // 4) Statik dosyalar / Static files (public/)
         app.serveStatic("public");
 
-        // 5) Dinle
+        // 5) Dinle / Listen
         var port = Std.parseInt(Platform.getEnv("PORT"));
         if (port == null) port = 8080;
-        Platform.println("Pixel Api konfigurasyonu hazir. PORT=" + port);
+        Platform.println("Pixel Api configured / konfigurasyonu hazir. PORT=" + port);
         app.listen(port);
     }
 }

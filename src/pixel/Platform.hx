@@ -3,9 +3,11 @@ package pixel;
 /**
  * Hedefe özel sistem erişimi — konsol çıktısı, ortam değişkeni,
  * dosya okuma ve saat gibi işlemleri tek arayüzde toplar.
+ * Target-specific system access — console output, environment variables,
+ * file reads and time unified behind a single interface.
  *
- * - js (Node.js): process/console/fs üzerinden
- * - Diğerleri (php, neko, hl, cpp…): sys üzerinden
+ * - js (Node.js): process/console/fs üzerinden / via process/console/fs
+ * - Diğerleri (php, neko, hl, cpp...): sys üzerinden / via sys
  */
 class Platform {
     public static function println(v:Dynamic):Void {

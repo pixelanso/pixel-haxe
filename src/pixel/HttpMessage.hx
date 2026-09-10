@@ -2,13 +2,18 @@ package pixel;
 
 /**
  * Platform bağımsız HTTP protokol yardımcıları.
+ * Platform-independent HTTP protocol helpers.
  * Ham istediği ayrıştırma, hedef ayrımı ve durum metinleri burada tutulur;
  * böylece hem sys socket sunucusu hem de Node.js sürücüsü aynı mantığı kullanır.
+ * Request parsing, target splitting and status texts live here so both the
+ * sys socket server and the Node.js driver share the same logic.
  */
 class HttpMessage {
     /**
      * `METHOD /hedef?query HTTP/1.1` biçimindeki target'ı path + query olarak
      * ayrıştırıp bir Request nesnesi kurar.
+     * Splits a `METHOD /target?query HTTP/1.1` target into path + query and
+     * returns a Request object.
      */
     public static function makeRequest(method:String, target:String, ?headers:Map<String, String>, ?body:String):Request {
         var qIdx = target.indexOf("?");
@@ -36,7 +41,8 @@ class HttpMessage {
 
     /**
      * Ham HTTP isteğini (header bloğu + body) Request'e çevirir.
-     * Ayrıştırılamazsa null döndürür.
+     * Parses a raw HTTP request (headers + body) into a Request.
+     * Ayrıştırılamazsa null döndürür. Returns null if it cannot be parsed.
      */
     public static function fromRaw(raw:String):Null<Request> {
         var lines = raw.split("\r\n");

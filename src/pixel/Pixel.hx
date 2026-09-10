@@ -10,18 +10,19 @@ import pixel.Static;
 import pixel.Server;
 
 /**
- * Pixel Api — hafif ve çok hedefli Haxe API mikro-framework'ü. 🎨
+ * Pixel Api — hafif ve çok hedefli Haxe API mikro-framework'ü.
+ * Pixel Api — a lightweight, multi-target Haxe API micro-framework.
  *
- * Basit kullanım:
+ * Basit kullanım / Quick usage:
  *
  * ```haxe
  * var app = Pixel.create();
  *
  * app.cors();
- * app.use(function(req, res, next) { Sys.println(req.toString()); next(); });
+ * app.use(function(req, res, next) { Platform.println(req.toString()); next(); });
  *
  * app.get("/", function(req, res) {
- *     res.json({ message: "Merhaba Pixel!" });
+ *     res.json({ message: "Merhaba Pixel! / Hello Pixel!" });
  * });
  *
  * app.get("/api/users/:id", function(req, res) {
@@ -32,6 +33,7 @@ import pixel.Server;
  * ```
  *
  * Tek bir kod tabanıyla Node.js, PHP, Neko ve HashLink üzerinde çalışır.
+ * Runs on Node.js, PHP, Neko and HashLink with a single codebase.
  */
 class Pixel {
     public var router:Router;
@@ -90,6 +92,7 @@ class Pixel {
 
     /**
      * Global middleware ekler.
+     * Adds a global middleware.
      * ```haxe
      * app.use(function(req, res, next) { ...; next(); });
      * ```
@@ -99,15 +102,15 @@ class Pixel {
         return this;
     }
 
-    // ------------------------------------------------------------ özellikler
+    // ------------------------------------------------------------ özellikler / features
 
-    /** CORS'u varsayılan ayarlarla etkinleştirir. */
+    /** CORS'u varsayılan ayarlarla etkinleştirir. Enables CORS with default settings. */
     public function cors():Pixel {
         corsInstance = new Cors();
         return this;
     }
 
-    /** Statik dosya servisi: `public/` klasörünü sunar. */
+    /** Statik dosya servisi: `public/` klasörünü sunar. Serves static files from `public/`. */
     public function serveStatic(dir:String, ?prefix:String = "/"):Pixel {
         staticEnabled = true;
         staticDir = dir;
@@ -126,12 +129,14 @@ class Pixel {
 
     /**
      * İsteği işler: CORS -> statik -> middleware zinciri -> rota.
+     * Processes a request: CORS -> static -> middleware chain -> route.
      * Testlerde Request'i elle kurup çağırmak da mümkündür.
+     * In tests you can build a Request manually and call this.
      */
     public function handle(req:Request, res:Response):Void {
         if (corsInstance != null) corsInstance.apply(req, res);
         if (req.method.toUpperCase() == "OPTIONS" && req.getHeader("Access-Control-Request-Method") != null) {
-            return; // preflight — middleware'ler atlanır
+            return; // preflight — middleware'ler atlanır / middleware is skipped
         }
         if (staticEnabled) {
             if (Static.serve(req, res, staticDir, staticPrefix)) return;

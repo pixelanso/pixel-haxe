@@ -3,7 +3,8 @@ package pixel;
 import haxe.io.Bytes;
 
 /**
- * Yanıtı temsil eder. Zincirleme kullanım destekler:
+ * Yanıtı temsil eder. Zincirleme kullanım destekler.
+ * Represents a response. Supports chaining:
  *
  * ```haxe
  * res.status(201).json({ ok:true });

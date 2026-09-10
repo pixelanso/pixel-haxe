@@ -13,10 +13,13 @@ import haxe.io.Bytes;
 
 /**
  * HTTP sunucusu.
+ * HTTP server.
  *
  * - **js**: Node.js'in `node:http` modülü kullanılır (`NodeServer`).
- * - **diğer hedefler** (php, neko, hl, cpp, lua, python…): `sys.net.Socket`
+ *   The Node.js `node:http` module is used (`NodeServer`).
+ * - **diğer hedefler** (php, neko, hl, cpp, lua, python...): `sys.net.Socket`
  *   üzerinde minimal blocking HTTP/1.1 sunucusu çalışır.
+ *   Other targets run a minimal blocking HTTP/1.1 server over `sys.net.Socket`.
  */
 class Server {
     #if !js
@@ -27,7 +30,7 @@ class Server {
         server.setFastSend(true);
 
         Platform.println("Pixel Api -> http://" + host + ":" + port);
-        Platform.println("Durdurmak icin Ctrl+C");
+        Platform.println("Durdurmak icin Ctrl+C / Press Ctrl+C to stop");
 
         while (true) {
             var client:Socket;
@@ -44,7 +47,7 @@ class Server {
             try {
                 handle(app, client);
             } catch (e:Dynamic) {
-                Platform.println("Request hatasi: " + Std.string(e));
+                Platform.println("Request hatasi / Request error: " + Std.string(e));
             }
         }
     }
@@ -73,6 +76,7 @@ class Server {
     }
 /**
      * HTTP istek başlıklarını (header bloğunu) ve varsa body'yi birlikte okur.
+     * Reads the HTTP request headers (header block) and, if present, the body.
      */
     static function readRequest(sock:Socket):String {
         var buf = new BytesBuffer();

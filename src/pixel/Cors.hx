@@ -5,9 +5,11 @@ import pixel.Response;
 
 /**
  * CORS (Cross-Origin Resource Sharing) yardımcısı.
+ * CORS (Cross-Origin Resource Sharing) helper.
  *
  * `Pixel.create().cors()` ile etkinleştirilir; preflight (OPTIONS)
  * isteklerini de otomatik yanıtlar.
+ * Enabled with `Pixel.create().cors()`; also answers preflight (OPTIONS) requests.
  */
 class Cors {
     public var allowedOrigin:String;
