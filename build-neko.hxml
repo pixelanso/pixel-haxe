@@ -1,0 +1,6 @@
+# Neko hedefi
+-cp src
+-main Main
+-neko bin/server.n
+-dce full
+# Derleme sonrası:  neko bin/server.n

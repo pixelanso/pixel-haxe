@@ -1,0 +1,5 @@
+# Node.js hedefi (önerilen)
+-cp src
+-main Main
+-js bin/Node/server.js
+-dce full

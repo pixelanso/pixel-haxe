@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Api 🎨</title>
+    <style>
+        :root {
+            --bg: #0f1117;
+            --card: #1b1f2a;
+            --accent: #e94f9f;
+            --text: #e6e9f0;
+            --muted: #8b93a7;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: "Segoe UI", system-ui, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .card {
+            background: var(--card);
+            border: 1px solid #2a3040;
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 480px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,.45);
+        }
+        h1 { font-size: 28px; margin-bottom: 8px; }
+        h1 span { color: var(--accent); }
+        p { color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+        code {
+            background: #0f1117;
+            color: #7fd6ff;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .badge {
+            display: inline-block;
+            background: rgba(233, 79, 159, .12);
+            color: var(--accent);
+            border: 1px solid rgba(233, 79, 159, .35);
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="badge">pixel-haxe</div>
+        <h1>Pixel <span>Api</span> 🎨</h1>
+        <p>Hafif ve çok hedefli Haxe API mikro-framework'ü.<br>
+           Bu statik sayfa <code>app.static("public")</code> ile servis ediliyor.</p>
+        <p>Rotaları deneyin: <br>
+           <code>GET /api/users</code> &nbsp;·&nbsp; <code>GET /health</code></p>
+    </div>
+</body>
+</html>

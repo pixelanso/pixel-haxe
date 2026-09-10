@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: krdlab/setup-haxe@v1.2.0
+        with:
+          haxe-version: 4.3.4
+          neko-version: 2.3.0
+
+      - name: Haxe sürümü
+        run: haxe --version
+
+      - name: Birim testler (Neko)
+        run: |
+          haxe build-test.hxml
+          neko bin/test.n
+
+      - name: Node.js hedefi derleme
+        run: haxe build-node.hxml
+
+      - name: Neko hedefi derleme
+        run: haxe build-neko.hxml
+
+      - name: PHP hedefi derleme
+        run: haxe build-php.hxml
+
+      - name: Node smoke testi
+        run: |
+          node bin/Node/server.js &
+          sleep 2
+          curl -sf http://127.0.0.1:8080/health || exit 1
+          curl -sf http://127.0.0.1:8080/api/users/2 || exit 1
+          kill %1 || true

@@ -1,0 +1,5 @@
+# Kolay derleme:  haxe run.hxml
+-cp src
+-main Main
+-js bin/server.js
+# Derleme sonrası:  node bin/server.js

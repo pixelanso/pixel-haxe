@@ -1,0 +1,6 @@
+# PHP hedefi
+-cp src
+-main Main
+-php bin/php
+-dce full
+# Derleme sonrası:  php bin/php/index.php

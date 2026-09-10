@@ -1,0 +1,6 @@
+# Birim testler (Neko hedefi)
+-cp src
+-cp test
+-main TestCore
+-neko bin/test.n
+# Derleme sonrası:  neko bin/test.n

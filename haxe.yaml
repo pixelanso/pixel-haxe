@@ -1,0 +1,10 @@
+project: pixel-haxe
+version: 0.1.0
+user: pixelanso
+license: MIT
+classpath: src
+main: Main
+outputs:
+  js:
+    path: bin/server.js
+    platform: js

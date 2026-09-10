@@ -1,0 +1,12 @@
+{
+    "name": "pixel-haxe",
+    "url": "https://github.com/pixelanso/pixel-haxe",
+    "license": "MIT",
+    "tags": ["http", "api", "framework", "server", "router", "middleware", "rest", "cors", "json"],
+    "description": "Pixel Api — Hafif ve çok hedefli Haxe API mikro-framework'ü. Router, middleware, CORS, JSON ve statik dosya sunumu tek kod tabanında; Node.js, PHP, Neko ve HashLink ile çalışır.",
+    "version": "0.1.0",
+    "classPath": "src",
+    "contributors": ["pixelanso"],
+    "releasenote": "İlk sürüm: router (:param ve *), middleware zinciri, CORS, JSON body, statik dosya servisi ve sys.net.Socket tabanlı HTTP sunucu.",
+    "dependencies": {}
+}

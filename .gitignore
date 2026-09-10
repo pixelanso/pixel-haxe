@@ -1,0 +1,24 @@
+# Derleme çıktıları
+bin/
+build/
+
+# Haxe / haxelib
+haxe-libraries/
+.haxelib/
+*.n
+*.hl
+*.swf
+*.log
+
+# Node
+node_modules/
+package-lock.json
+
+# Editör / işletim sistemi
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Ortam
+.env
