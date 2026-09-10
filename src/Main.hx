@@ -26,14 +26,17 @@ class Main {
             next();
         });
 
-        // 2) CORS (herkese açık ve preflight dahil / open and including preflight)
+        // 2) Global hiz siniri / global rate limit: dakikada 240 istek
+        app.use(new pixel.RateLimit(240, 60).middleware());
+
+        // 3) CORS (herkese acik ve preflight dahil / open and including preflight)
         app.cors();
 
-        // 3) Rotalar / Routes
+        // 4) Rotalar / Routes
         app.get("/", function(req, res) {
             res.json({
                 name: "Pixel Api",
-                version: "0.1.0",
+                version: "0.2.0",
                 description: "Hafif ve cok hedefli Haxe API mikro-framework'unun ornek uygulamasi / Sample app for the lightweight, multi-target Haxe API micro-framework",
                 endpoints: {
                     root: "GET /",
@@ -42,10 +45,14 @@ class Main {
                     getUser: "GET /api/users/:id",
                     createUser: "POST /api/users",
                     updateUser: "PUT /api/users/:id",
-                    deleteUser: "DELETE /api/users/:id"
+                    deleteUser: "DELETE /api/users/:id",
+                    v1Ping: "GET /api/v1/ping",
+                    v1Time: "GET /api/v1/time",
+                    adminStats: "GET /admin/stats (Bearer token gerekli / Bearer token required)"
                 }
             });
         });
+
 
         app.get("/health", function(req, res) {
             res.json({status: "ok", uptime: Platform.time()});
@@ -108,15 +115,47 @@ class Main {
             res.status(404).json({error: "User not found / Kullanici bulunamadi", id: id});
         });
 
-        // Kayıtlı olmayan rota -> 404 / Unregistered route -> 404
-        app.all("*", function(req, res) {
-            res.status(404).json({error: "Not Found / Bulunamadi", path: req.path});
+        // 5) Rota grubu: ortak prefix / route group with a shared prefix
+        app.group("/api/v1", function(v1:pixel.RouteGroup) {
+            v1.get("/ping", function(req, res) {
+                res.json({pong: true, version: "v1"});
+            });
+            v1.get("/time", function(req, res) {
+                res.json({now: Platform.time()});
+            });
         });
 
-        // 4) Statik dosyalar / Static files (public/)
+        // 6) Korunan grup: Bearer token ile / protected group with Bearer token
+        //    Test / Try it:
+        //    curl -H "Authorization: Bearer super-secret-token" http://localhost:8080/admin/stats
+        app.group("/admin", function(admin:pixel.RouteGroup) {
+            admin.use(pixel.Auth.bearer(["super-secret-token"]));
+            admin.get("/stats", function(req, res) {
+                res.json({users: users.length, uptime: Platform.time()});
+            });
+        });
+
+        // 7) Cookie ornegi / cookie example
+        app.get("/api/visit", function(req, res) {
+            var seen = req.cookie("visits");
+            var count = seen == null ? 1 : Std.parseInt(seen) + 1;
+            res.setCookie("visits", Std.string(count), 3600);
+            res.json({visits: count});
+        });
+
+        // 8) Ozel 404 isleyicisi / custom 404 handler
+        app.onNotFound(function(req, res) {
+            res.status(404).json({
+                error: "Not Found / Bulunamadi",
+                path: req.path,
+                hint: "GET / tum uc noktalari listeler / lists all endpoints"
+            });
+        });
+
+        // 9) Statik dosyalar / Static files (public/)
         app.serveStatic("public");
 
-        // 5) Dinle / Listen
+        // 10) Dinle / Listen
         var port = Std.parseInt(Platform.getEnv("PORT"));
         if (port == null) port = 8080;
         Platform.println("Pixel Api configured / konfigurasyonu hazir. PORT=" + port);

@@ -52,7 +52,11 @@ class NodeServer {
         }
 
         var request = HttpMessage.makeRequest(method, url, headersMap, bodyStr);
+        try {
+            request.ip = untyped __js__('req.socket && req.socket.remoteAddress ? req.socket.remoteAddress : ""');
+        } catch (e:Dynamic) {}
         var response = new Response();
+
         try {
             app.handle(request, response);
         } catch (e:Dynamic) {
@@ -67,8 +71,12 @@ class NodeServer {
             untyped res.setHeader(k, response.headers.get(k));
         }
         untyped res.setHeader("Content-Length", Std.string(response.body.length));
-        untyped res.setHeader("Server", "pixel-haxe/0.1.0");
+        untyped res.setHeader("Server", "pixel-haxe/0.2.0");
+        if (response.cookiesToSet.length > 0) {
+            untyped res.setHeader("Set-Cookie", response.cookiesToSet);
+        }
         untyped res.end(toBuffer(response.body));
+
     }
 
     static function toBuffer(b:Bytes):Dynamic {

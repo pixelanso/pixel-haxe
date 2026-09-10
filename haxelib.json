@@ -2,11 +2,11 @@
     "name": "pixel-haxe",
     "url": "https://github.com/pixelanso/pixel-haxe",
     "license": "MIT",
-    "tags": ["http", "api", "framework", "server", "router", "middleware", "rest", "cors", "json"],
-    "description": "Pixel Api — Hafif ve çok hedefli Haxe API mikro-framework'ü. A lightweight, multi-target Haxe API micro-framework. Router, middleware, CORS, JSON and static file serving in a single codebase; runs on Node.js, PHP, Neko and HashLink.",
-    "version": "0.1.0",
+    "tags": ["http", "api", "framework", "server", "router", "middleware", "rest", "cors", "json", "auth", "rate-limit", "cookies"],
+    "description": "Pixel Api — Hafif ve cok hedefli Haxe API mikro-framework'u. A lightweight, multi-target Haxe API micro-framework. Router, route groups, middleware, CORS, JSON, cookies, Bearer auth, rate limiting and static file serving; runs on Node.js, PHP, Neko and HashLink.",
+    "version": "0.2.0",
     "classPath": "src",
     "contributors": ["pixelanso"],
-    "releasenote": "İlk sürüm / First release: router (:param ve * / and *), middleware chain, CORS, JSON body, static file serving and a sys.net.Socket based HTTP server.",
+    "releasenote": "v0.2.0: rota gruplari, rotaya ozel middleware, Bearer token auth, hiz sinirlama, cookie destegi, 405 + Allow, ozel 404/hata isleyicileri. Route groups, route-scoped middleware, Bearer auth, rate limiting, cookies, 405 + Allow and custom 404/error handlers.",
     "dependencies": {}
 }

@@ -15,17 +15,26 @@ class Route {
     public var pattern:String;
     public var segments:Array<String>;
     public var handler:(Request, Response) -> Void;
+    /** Rotaya ozel middleware zinciri / Route-scoped middleware chain. */
+    public var middleware:Array<Middleware>;
 
     public function new(method:String, pattern:String, handler:(Request, Response) -> Void) {
         this.method = method;
         this.pattern = pattern;
         this.segments = Router.splitPath(Router.normPath(pattern));
         this.handler = handler;
+        this.middleware = [];
     }
 
     public function matchesMethod(m:String):Bool {
-        return method == "*" || method.toLowerCase() == m.toLowerCase();
+        if (method == "*") return true;
+        var lm = m.toLowerCase();
+        if (method.toLowerCase() == lm) return true;
+        // HEAD, GET rotasina dusmeli / HEAD falls back to GET routes
+        if (lm == "head" && method.toLowerCase() == "get") return true;
+        return false;
     }
+
 
     /**
      * Verilen path ile eşleşirse yakalanan parametreleri (Map) döndürür,

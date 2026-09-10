@@ -64,11 +64,16 @@ class Server {
             res.status(400).text("Bad Request");
         } else {
             try {
+                req.ip = sock.host().host.toString();
+            } catch (e:Dynamic) {}
+
+            try {
                 app.handle(req, res);
             } catch (e:Dynamic) {
                 res.status(500).json({error: "Internal Server Error", detail: Std.string(e)});
             }
         }
+
 
         writeResponse(sock, res);
 
@@ -114,12 +119,16 @@ class Server {
         sb.add("HTTP/1.1 "); sb.add(Std.string(res.statusCode)); sb.add(" ");
         sb.add(HttpMessage.statusText(res.statusCode)); sb.add("\r\n");
         sb.add("Content-Length: "); sb.add(Std.string(res.body.length)); sb.add("\r\n");
-        sb.add("Server: pixel-haxe/0.1.0\r\n");
+        sb.add("Server: pixel-haxe/0.2.0\r\n");
         sb.add("Connection: close\r\n");
         for (k in res.headers.keys()) {
             sb.add(k); sb.add(": "); sb.add(res.headers.get(k)); sb.add("\r\n");
         }
+        for (c in res.cookiesToSet) {
+            sb.add("Set-Cookie: "); sb.add(c); sb.add("\r\n");
+        }
         sb.add("\r\n");
+
 
         var out = sock.output;
         out.writeString(sb.toString());

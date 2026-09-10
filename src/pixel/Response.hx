@@ -15,12 +15,15 @@ class Response {
     public var headers:Map<String, String>;
     public var body:Bytes;
     public var sent:Bool;
+    /** Gonderilecek `Set-Cookie` degerleri / `Set-Cookie` values to send. */
+    public var cookiesToSet:Array<String>;
 
     public function new() {
         statusCode = 200;
         headers = new Map();
         body = Bytes.alloc(0);
         sent = false;
+        cookiesToSet = [];
     }
 
     public function status(code:Int):Response {
@@ -32,6 +35,28 @@ class Response {
         headers.set(name, value);
         return this;
     }
+
+    /**
+     * Cookie ekler / Appends a cookie.
+     * ```haxe
+     * res.setCookie("sid", "abc123", 3600);
+     * ```
+     */
+    public function setCookie(name:String, value:String, ?maxAge:Int = null, ?path:String = "/"):Response {
+        var c = name + "=" + value + "; Path=" + (path == null ? "/" : path);
+        if (maxAge != null) c += "; Max-Age=" + maxAge;
+        cookiesToSet.push(c);
+        return this;
+    }
+
+    /**
+     * Cookie'yi kaldirir (Max-Age=0) / Clears a cookie (Max-Age=0).
+     */
+    public function clearCookie(name:String, ?path:String = "/"):Response {
+        cookiesToSet.push(name + "=; Path=" + (path == null ? "/" : path) + "; Max-Age=0");
+        return this;
+    }
+
 
     public function text(value:String):Response {
         body = Bytes.ofString(value);

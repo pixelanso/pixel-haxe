@@ -28,6 +28,31 @@ class Router {
         return null;
     }
 
+    /**
+     * Verilen path ile eslesen (catch-all haric) HTTP metotlarini dondurur;
+     * 405 `Allow` basligi icin kullanilir.
+     * Returns the HTTP methods (excluding catch-alls) matching the path;
+     * used for 405 `Allow` headers.
+     */
+    public function allowedMethods(path:String):Array<String> {
+        var out = new Array<String>();
+        for (r in routes) {
+            if (r.method == "*") continue;
+            if (r.matchParams(path) == null) continue;
+            var m = r.method.toUpperCase();
+            var exists = false;
+            for (e in out) {
+                if (e == m) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) out.push(m);
+        }
+        return out;
+    }
+
+
     public static function normPath(path:String):String {
         if (path == null || path == "") return "/";
         var p = path;

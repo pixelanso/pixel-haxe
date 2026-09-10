@@ -39,10 +39,18 @@ class Pixel {
     public var router:Router;
     public var middleware:Array<Middleware>;
 
+    /** Ozel 404 isleyici / Custom 404 handler. */
+    public var onNotFoundHandler:(Request, Response) -> Void;
+    /** Ozel hata isleyici / Custom error handler. */
+    public var onErrorHandler:(Request, Response, Dynamic) -> Void;
+    /** Ozel 405 isleyici / Custom 405 handler. */
+    public var onMethodNotAllowedHandler:(Request, Response, Array<String>) -> Void;
+
     private var corsInstance:Cors;
     private var staticEnabled:Bool;
     private var staticDir:String;
     private var staticPrefix:String;
+
 
     public function new() {
         router = new Router();
@@ -91,16 +99,63 @@ class Pixel {
     // ------------------------------------------------------------ middleware
 
     /**
-     * Global middleware ekler.
-     * Adds a global middleware.
+     * Global middleware ekler; ham fonksiyon veya Middleware nesnesi kabul eder.
+     * Adds a global middleware; accepts a raw function or a Middleware instance.
      * ```haxe
      * app.use(function(req, res, next) { ...; next(); });
+     * app.use(new RateLimit(60, 60).middleware());
      * ```
      */
-    public function use(handler:(Request, Response, Void -> Void) -> Void):Pixel {
-        middleware.push(new Middleware(handler));
+    public function use(handler:Dynamic):Pixel {
+        var mw:Middleware = Std.isOfType(handler, Middleware)
+            ? cast(handler, Middleware)
+            : new Middleware(cast handler);
+        middleware.push(mw);
         return this;
     }
+
+
+    /**
+     * Ortak prefix altinda rota grubu olusturur.
+     * Creates a route group under a common prefix.
+     * ```haxe
+     * app.group("/api/v1", function(v1) {
+     *     v1.get("/ping", function(req, res) { res.json({pong:true}); });
+     * });
+     * ```
+     */
+    public function group(prefix:String, fn:(RouteGroup) -> Void):Pixel {
+        fn(new RouteGroup(this, prefix));
+        return this;
+    }
+
+    /**
+     * Ozel 404 (rota bulunamadi) isleyicisi atar.
+     * Sets a custom 404 (route not found) handler.
+     */
+    public function onNotFound(handler:(Request, Response) -> Void):Pixel {
+        onNotFoundHandler = handler;
+        return this;
+    }
+
+    /**
+     * Ozel 405 (metot izinli degil) isleyicisi atar.
+     * Sets a custom 405 (method not allowed) handler.
+     */
+    public function onMethodNotAllowed(handler:(Request, Response, Array<String>) -> Void):Pixel {
+        onMethodNotAllowedHandler = handler;
+        return this;
+    }
+
+    /**
+     * Ozel hata isleyicisi atar; atanmazsa varsayilan 500 doner.
+     * Sets a custom error handler; defaults to a 500 response when absent.
+     */
+    public function onError(handler:(Request, Response, Dynamic) -> Void):Pixel {
+        onErrorHandler = handler;
+        return this;
+    }
+
 
     // ------------------------------------------------------------ özellikler / features
 
@@ -156,15 +211,58 @@ class Pixel {
 
     private function route(req:Request, res:Response):Void {
         var resolved = router.resolve(req.method, req.path);
+
+        // catch-all'a dusmeden once 405 kontrolu / check 405 before falling into the catch-all
+        if (resolved == null || resolved.route.method == "*") {
+            var allowed = router.allowedMethods(req.path);
+            if (allowed.length > 0) {
+                methodNotAllowed(req, res, allowed);
+                return;
+            }
+        }
+
         if (resolved == null) {
-            res.notFound();
+            if (onNotFoundHandler != null) {
+                onNotFoundHandler(req, res);
+            } else {
+                res.notFound();
+            }
             return;
         }
+
         req.params = resolved.params;
-        try {
-            resolved.route.handler(req, res);
-        } catch (e:Dynamic) {
-            res.serverError(Std.string(e));
+        runRoute(0, req, res, resolved.route);
+    }
+
+    function methodNotAllowed(req:Request, res:Response, allowed:Array<String>):Void {
+        if (onMethodNotAllowedHandler != null) {
+            onMethodNotAllowedHandler(req, res, allowed);
+            return;
+        }
+        res.status(405)
+            .header("Allow", allowed.join(", "))
+            .json({error: "Method Not Allowed / Izin verilmeyen metot", allow: allowed});
+    }
+
+    /**
+     * Once rotaya ozel middleware, sonra handler calisir.
+     * Route-scoped middleware runs first, then the handler.
+     */
+    private function runRoute(i:Int, req:Request, res:Response, r:Route):Void {
+        if (i < r.middleware.length) {
+            r.middleware[i].handler(req, res, function() {
+                runRoute(i + 1, req, res, r);
+            });
+        } else {
+            try {
+                r.handler(req, res);
+            } catch (e:Dynamic) {
+                if (onErrorHandler != null) {
+                    onErrorHandler(req, res, e);
+                } else {
+                    res.serverError(Std.string(e));
+                }
+            }
         }
     }
 }

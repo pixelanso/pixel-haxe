@@ -34,20 +34,33 @@ targets and run it unchanged.
 
 - **Router** — `:param` path parametreleri ve `*` catch-all desteği
   `:param` path parameters and `*` catch-all support
-- **Middleware zinciri** — `next()` ile sıralı işleme
-  Middleware chain — sequential processing with `next()`
+- **Rota grupları** — ortak prefix ve grup middleware'i
+  Route groups — shared prefix and group middleware
+- **Middleware zinciri** — global ve rotaya özel, `next()` ile sıralı işleme
+  Middleware chain — global and route-scoped, sequential processing with `next()`
 - **CORS** — preflight (OPTIONS) dahil otomatik yanıt
   automatic response including preflight (OPTIONS)
 - **JSON** — `haxe.Json` tabanlı request body parse + response serialize
   `haxe.Json` based request body parsing and response serialization
+- **Form body** — `application/x-www-form-urlencoded` ayrıştırma (`req.formBody()`)
+  `application/x-www-form-urlencoded` parsing (`req.formBody()`)
+- **Cookie** — `req.cookie()` okuma, `res.setCookie()` / `res.clearCookie()` yazma
+  reading with `req.cookie()`, writing with `res.setCookie()` / `res.clearCookie()`
+- **Bearer auth** — `Auth.bearer(tokens)` ile hazır 401 koruması
+  ready-made 401 protection with `Auth.bearer(tokens)`
+- **Hız sınırlama** — bellek içi kayan pencere, `RateLimit`
+  in-memory sliding window rate limiting, `RateLimit`
+- **405 + Allow** — yanlış metot için doğru durum kodu ve `Allow` başlığı
+  correct status code and `Allow` header for wrong methods
+- **Özel işleyiciler** — `app.onNotFound()`, `app.onMethodNotAllowed()`, `app.onError()`
+  custom handlers: `app.onNotFound()`, `app.onMethodNotAllowed()`, `app.onError()`
 - **Statik dosya servisi** — `..` koruması ve MIME haritası ile
   static file serving with `..` protection and MIME map
-- **Query string** — `?sayfa=2&limit=10` otomatik `req.query` kullanımı
-  automatic `req.query` population from query strings
 - **Sıfır bağımlılık** — yalnızca Haxe standart kütüphanesi
   zero dependencies — only the Haxe standard library
 - **MIT Lisansı** + GitHub Actions CI (Neko + Node + PHP)
   MIT License + GitHub Actions CI (Neko + Node + PHP)
+
 
 ## Hızlı Başlangıç / Quick Start
 
@@ -80,6 +93,11 @@ PORT=3000 node bin/Node/server.js
 | `POST`         | `/api/users`      | Yeni kullanıcı (JSON) | Create user (JSON)   |
 | `PUT`          | `/api/users/:id`  | Kullanıcıyı güncelle  | Update user          |
 | `DELETE`       | `/api/users/:id`  | Kullanıcıyı sil       | Delete user          |
+| `GET`          | `/api/v1/ping`    | Rota grubu örneği     | Route group example  |
+| `GET`          | `/api/v1/time`    | Rota grubu örneği     | Route group example  |
+| `GET`          | `/admin/stats`    | Bearer token gerekli  | Bearer token required |
+| `GET`          | `/api/visit`      | Cookie sayacı         | Cookie counter       |
+
 
 ```bash
 curl http://localhost:8080/api/users/2
@@ -89,6 +107,20 @@ curl -X POST http://localhost:8080/api/users \
   -H "Content-Type: application/json" \
   -d '{"name":"Deniz"}'
 ```
+
+Korumalı uç nokta ve cookie örneği / Protected endpoint and cookie example:
+
+```bash
+# Bearer token olmadan -> 401
+curl -i http://localhost:8080/admin/stats
+
+# Gecerli token ile -> 200
+curl -H "Authorization: Bearer super-secret-token" http://localhost:8080/admin/stats
+
+# Cookie sayaci / cookie counter
+curl -i http://localhost:8080/api/visit
+```
+
 
 ## Framework Kullanımı / Framework Usage
 
@@ -132,6 +164,29 @@ class Main {
 }
 ```
 
+Rota grupları, koruma ve hız sınırı / Route groups, protection and rate limiting:
+
+```haxe
+// Rota grubu / route group
+app.group("/api/v1", function(v1:pixel.RouteGroup) {
+    v1.get("/ping", function(req, res) { res.json({pong: true}); });
+});
+
+// Bearer token ile korunan grup / Bearer-protected group
+app.group("/admin", function(admin:pixel.RouteGroup) {
+    admin.use(pixel.Auth.bearer(["super-secret-token"]));
+    admin.get("/stats", function(req, res) { res.json({ok: true}); });
+});
+
+// Hiz siniri / rate limiting (istek/I, requests/minute)
+app.use(new pixel.RateLimit(60, 60).middleware());
+
+// Cookie / cookies
+res.setCookie("sid", "abc", 3600);
+var sid = req.cookie("sid");
+```
+
+
 ## Geliştirici Komutları / Developer Commands
 
 ```bash
@@ -146,20 +201,23 @@ haxe run.hxml           # kısayol / shortcut (Node target)
 
 - [x] Router (`:param`, `*`), middleware, CORS, JSON, statik
   Router, middleware, CORS, JSON, static files
-- [ ] Rota grubu / prefix ile rota tanımlama
+- [x] Rota grubu / prefix ile rota tanımlama
   Route groups / prefix routing
+- [x] Temel auth: Bearer token middleware'i
+  Basic auth: Bearer token middleware
+- [x] Rate limiting (basit in-memory)
+  Basic in-memory rate limiting
+- [x] Cookie desteği (`req.cookie()`, `res.setCookie()`)
+  Cookie support (`req.cookie()`, `res.setCookie()`)
 - [ ] Query + JSON body'nin resmi request nesnesinde birleştirilmesi
   Unified query + JSON body request object
-- [ ] Temel auth: Bearer token middleware'i
-  Basic auth: Bearer token middleware
-- [ ] Rate limiting (basit in-memory)
-  Basic in-memory rate limiting
 - [ ] OpenAPI/Swagger dokümantasyon üretici
   OpenAPI/Swagger documentation generator
 - [ ] WebSocket desteği
   WebSocket support
 - [ ] `haxelib publish` ile resmî paket sürümü
   Official package release via `haxelib publish`
+
 
 ## Lisans / License
 
