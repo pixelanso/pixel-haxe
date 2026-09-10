@@ -87,6 +87,7 @@ Kendi uygulamanı 30 saniyede kur:
 import pixel.Pixel;
 import pixel.Request;
 import pixel.Response;
+import pixel.Platform;
 
 class Main {
     static function main() {
@@ -94,7 +95,7 @@ class Main {
 
         // istek logu middleware'i
         app.use(function(req:Request, res:Response, next:Void->Void) {
-            Sys.println("--> " + req.method + " " + req.path);
+            Platform.println("--> " + req.method + " " + req.path);
             next();
         });
 
