@@ -119,7 +119,7 @@ class Server {
         sb.add("HTTP/1.1 "); sb.add(Std.string(res.statusCode)); sb.add(" ");
         sb.add(HttpMessage.statusText(res.statusCode)); sb.add("\r\n");
         sb.add("Content-Length: "); sb.add(Std.string(res.body.length)); sb.add("\r\n");
-        sb.add("Server: pixel-haxe/0.2.0\r\n");
+        sb.add("Server: pixel-haxe/0.3.0\r\n");
         sb.add("Connection: close\r\n");
         for (k in res.headers.keys()) {
             sb.add(k); sb.add(": "); sb.add(res.headers.get(k)); sb.add("\r\n");

@@ -71,7 +71,7 @@ class NodeServer {
             untyped res.setHeader(k, response.headers.get(k));
         }
         untyped res.setHeader("Content-Length", Std.string(response.body.length));
-        untyped res.setHeader("Server", "pixel-haxe/0.2.0");
+        untyped res.setHeader("Server", "pixel-haxe/0.3.0");
         if (response.cookiesToSet.length > 0) {
             untyped res.setHeader("Set-Cookie", response.cookiesToSet);
         }

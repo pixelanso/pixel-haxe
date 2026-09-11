@@ -130,9 +130,51 @@ class Pixel {
     }
 
     /**
+     * Rotaya OpenAPI dokumani icin ozet ve etiketler atar.
+     * Attaches an OpenAPI summary (and optional tags) to a route.
+     * ```haxe
+     * app.describe("GET", "/api/users/:id", "Tek kullanici", ["users"]);
+     * ```
+     */
+    public function describe(method:String, path:String, summary:String, ?tags:Array<String>):Pixel {
+        var norm = Router.normPath(path);
+        for (r in router.routes) {
+            if (r.method.toUpperCase() == method.toUpperCase() && Router.normPath(r.pattern) == norm) {
+                r.summary = summary;
+                r.tags = tags;
+            }
+        }
+        return this;
+    }
+
+    /**
+     * OpenAPI 3.0 dokumanini bir GET rotasi olarak sunar.
+     * Serves the OpenAPI 3.0 document as a GET route.
+     * ```haxe
+     * app.docs();                    // GET /openapi.json
+     * app.docs("/api-docs", "Benim Api / My Api");
+     * ```
+     */
+    public function docs(?path:String = "/openapi.json", ?title:String = null, ?description:String = null):Pixel {
+        var gen = new OpenApi(title, versionString(), description);
+        get(path, function(req, res) {
+            res.json(gen.spec(this));
+        });
+        return this;
+    }
+
+    /**
+     * Framework surumu / Framework version string.
+     */
+    public static function versionString():String {
+        return "0.3.0";
+    }
+
+    /**
      * Ozel 404 (rota bulunamadi) isleyicisi atar.
      * Sets a custom 404 (route not found) handler.
      */
+
     public function onNotFound(handler:(Request, Response) -> Void):Pixel {
         onNotFoundHandler = handler;
         return this;

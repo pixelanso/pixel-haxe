@@ -17,6 +17,10 @@ class Route {
     public var handler:(Request, Response) -> Void;
     /** Rotaya ozel middleware zinciri / Route-scoped middleware chain. */
     public var middleware:Array<Middleware>;
+    /** OpenAPI dokumani icin ozet / OpenAPI summary for docs. */
+    public var summary:String;
+    /** OpenAPI dokumani etiketleri / OpenAPI tags for docs. */
+    public var tags:Array<String>;
 
     public function new(method:String, pattern:String, handler:(Request, Response) -> Void) {
         this.method = method;
@@ -24,7 +28,10 @@ class Route {
         this.segments = Router.splitPath(Router.normPath(pattern));
         this.handler = handler;
         this.middleware = [];
+        this.summary = null;
+        this.tags = null;
     }
+
 
     public function matchesMethod(m:String):Bool {
         if (method == "*") return true;

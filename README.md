@@ -50,6 +50,12 @@ targets and run it unchanged.
   ready-made 401 protection with `Auth.bearer(tokens)`
 - **Hız sınırlama** — bellek içi kayan pencere, `RateLimit`
   in-memory sliding window rate limiting, `RateLimit`
+- **İstek loglama** — `Logger` ile durum/metot/yol/süre satırları
+  request logging — status/method/path/duration lines with `Logger`
+- **Body boyut sınırı** — `BodyLimit` ile aşımda 413 yanıtı
+  request body size limit — 413 response when exceeded with `BodyLimit`
+- **OpenAPI 3.0** — `app.docs()` ile `openapi.json` üretimi, `app.describe()` ile rota özetleri
+  OpenAPI 3.0 — generate `openapi.json` with `app.docs()`, route summaries with `app.describe()`
 - **405 + Allow** — yanlış metot için doğru durum kodu ve `Allow` başlığı
   correct status code and `Allow` header for wrong methods
 - **Özel işleyiciler** — `app.onNotFound()`, `app.onMethodNotAllowed()`, `app.onError()`
@@ -97,6 +103,7 @@ PORT=3000 node bin/Node/server.js
 | `GET`          | `/api/v1/time`    | Rota grubu örneği     | Route group example  |
 | `GET`          | `/admin/stats`    | Bearer token gerekli  | Bearer token required |
 | `GET`          | `/api/visit`      | Cookie sayacı         | Cookie counter       |
+| `GET`          | `/openapi.json`   | OpenAPI 3.0 dokümanı  | OpenAPI 3.0 document |
 
 
 ```bash
@@ -119,6 +126,9 @@ curl -H "Authorization: Bearer super-secret-token" http://localhost:8080/admin/s
 
 # Cookie sayaci / cookie counter
 curl -i http://localhost:8080/api/visit
+
+# OpenAPI dokumani / OpenAPI document
+curl http://localhost:8080/openapi.json
 ```
 
 
@@ -184,7 +194,19 @@ app.use(new pixel.RateLimit(60, 60).middleware());
 // Cookie / cookies
 res.setCookie("sid", "abc", 3600);
 var sid = req.cookie("sid");
+
+// Istek loglama / request logging
+app.use(new pixel.Logger().middleware());
+// 200 GET /api/users 3ms
+
+// Govde boyutu siniri / body size limit (1 MB, asimda 413)
+app.use(new pixel.BodyLimit(1024 * 1024).middleware());
+
+// OpenAPI dokumani / OpenAPI document
+app.describe("GET", "/api/users", "Kullanici listesi / List users", ["users"]);
+app.docs(); // GET /openapi.json
 ```
+
 
 
 ## Geliştirici Komutları / Developer Commands
@@ -209,14 +231,15 @@ haxe run.hxml           # kısayol / shortcut (Node target)
   Basic in-memory rate limiting
 - [x] Cookie desteği (`req.cookie()`, `res.setCookie()`)
   Cookie support (`req.cookie()`, `res.setCookie()`)
+- [x] OpenAPI/Swagger dokümantasyon üretici
+  OpenAPI/Swagger documentation generator
 - [ ] Query + JSON body'nin resmi request nesnesinde birleştirilmesi
   Unified query + JSON body request object
-- [ ] OpenAPI/Swagger dokümantasyon üretici
-  OpenAPI/Swagger documentation generator
 - [ ] WebSocket desteği
   WebSocket support
 - [ ] `haxelib publish` ile resmî paket sürümü
   Official package release via `haxelib publish`
+
 
 
 ## Lisans / License

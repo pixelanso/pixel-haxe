@@ -132,7 +132,54 @@ class TestCore {
             resCustom.statusCode == 404
             && resCustom.body.getString(0, resCustom.body.length).indexOf("custom") >= 0);
 
+        // govde boyutu siniri / body size limit
+        var appLimit = new pixel.Pixel();
+        appLimit.use(new pixel.BodyLimit(10).middleware());
+        appLimit.post("/echo", function(req, res) { res.json({len: req.rawBody.length}); });
+        var res413 = new pixel.Response();
+        appLimit.handle(new pixel.Request("POST", "/echo", null, "bu govde cok uzun / this body is too long"), res413);
+        check("buyuk govde -> 413 / oversized body -> 413", res413.statusCode == 413);
+        var resOk = new pixel.Response();
+        appLimit.handle(new pixel.Request("POST", "/echo", null, "kisa"), resOk);
+        check("kucuk govde gecmeli / small body passes", resOk.statusCode == 200);
+
+        // OpenAPI uretici / OpenAPI generator
+        var appDocs = new pixel.Pixel();
+        appDocs.get("/api/users", function(req, res) {});
+        appDocs.get("/api/users/:id", function(req, res) {});
+        appDocs.post("/api/users", function(req, res) {});
+        appDocs.describe("GET", "/api/users/:id", "Tek kullanici / Get one user", ["users"]);
+        appDocs.docs("/spec.json");
+        var spec = new pixel.OpenApi("T", "9.9").spec(appDocs);
+        var specPaths:Array<String> = Reflect.fields(Reflect.field(spec, "paths"));
+        var hasUsers = false; var hasUsersId = false;
+        for (p in specPaths) {
+            if (p == "/api/users") hasUsers = true;
+            if (p == "/api/users/{id}") hasUsersId = true;
+        }
+        check("OpenAPI path'leri dogru / OpenAPI paths correct", hasUsers && hasUsersId);
+        check("OpenAPI :param -> {param} donusumu / :param -> {param} conversion",
+            pixel.OpenApi.toOpenApiPath("/api/users/:id") == "/api/users/{id}");
+        var pathItem = Reflect.field(Reflect.field(spec, "paths"), "/api/users/{id}");
+        var getOp = Reflect.field(pathItem, "get");
+        check("describe ozeti spesifikasyonda / describe summary in spec",
+            Reflect.field(getOp, "summary") == "Tek kullanici / Get one user");
+        var specRes = new pixel.Response();
+        appDocs.handle(new pixel.Request("GET", "/spec.json"), specRes);
+        check("docs() rotasi spesifikasyon sunmali / docs() route serves the spec",
+            specRes.statusCode == 200
+            && specRes.body.getString(0, specRes.body.length).indexOf("openapi") >= 0);
+
+        // logger middleware zinciri bozmadan gecmeli / logger passes chain through
+        var appLog = new pixel.Pixel();
+        appLog.use(new pixel.Logger().middleware());
+        appLog.get("/ok", function(req, res) { res.json({fine: true}); });
+        var resLogged = new pixel.Response();
+        appLog.handle(new pixel.Request("GET", "/ok"), resLogged);
+        check("logger istegi engellememeli / logger must not block requests", resLogged.statusCode == 200);
+
         Sys.println("Tum testler gecti / All tests passed");
+
 
     }
 
