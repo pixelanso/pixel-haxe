@@ -10,34 +10,15 @@ package pixel;
  */
 class HttpMessage {
     /**
-     * `METHOD /hedef?query HTTP/1.1` biçimindeki target'ı path + query olarak
-     * ayrıştırıp bir Request nesnesi kurar.
-     * Splits a `METHOD /target?query HTTP/1.1` target into path + query and
-     * returns a Request object.
+     * `METHOD /hedef?query HTTP/1.1` biçimindeki target'ı Request'e çevirir.
+     * Path + query ayrıştırması Request yapıcısında yapılır.
+     * Converts a `METHOD /target?query HTTP/1.1` target into a Request.
+     * Path + query splitting is done by the Request constructor.
      */
     public static function makeRequest(method:String, target:String, ?headers:Map<String, String>, ?body:String):Request {
-        var qIdx = target.indexOf("?");
-        var path = qIdx < 0 ? target : target.substr(0, qIdx);
-        if (path == "") path = "/";
-        var qs = qIdx < 0 ? "" : target.substr(qIdx + 1);
-
-        var req = new Request(method, path, headers, body == null ? "" : body);
-
-        if (qs != "") {
-            for (pair in qs.split("&")) {
-                if (pair == "") continue;
-                var ei = pair.indexOf("=");
-                var k = ei >= 0 ? pair.substr(0, ei) : pair;
-                var v = ei >= 0 ? pair.substr(ei + 1) : "";
-                try {
-                    req.query.set(StringTools.urlDecode(k), StringTools.urlDecode(v));
-                } catch (e:Dynamic) {
-                    req.query.set(k, v);
-                }
-            }
-        }
-        return req;
+        return new Request(method, target, headers, body == null ? "" : body);
     }
+
 
     /**
      * Ham HTTP isteğini (header bloğu + body) Request'e çevirir.

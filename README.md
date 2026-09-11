@@ -56,6 +56,8 @@ targets and run it unchanged.
   request body size limit — 413 response when exceeded with `BodyLimit`
 - **OpenAPI 3.0** — `app.docs()` ile `openapi.json` üretimi, `app.describe()` ile rota özetleri
   OpenAPI 3.0 — generate `openapi.json` with `app.docs()`, route summaries with `app.describe()`
+- **İzleme paneli** — `app.panel()` ile tarayıcı tabanlı canlı metrik paneli (toplam istek, durum kodları, en yavaş yollar, bellek)
+  monitoring panel — browser-based live metrics with `app.panel()` (total requests, status codes, slowest paths, memory)
 - **405 + Allow** — yanlış metot için doğru durum kodu ve `Allow` başlığı
   correct status code and `Allow` header for wrong methods
 - **Özel işleyiciler** — `app.onNotFound()`, `app.onMethodNotAllowed()`, `app.onError()`
@@ -104,6 +106,7 @@ PORT=3000 node bin/Node/server.js
 | `GET`          | `/admin/stats`    | Bearer token gerekli  | Bearer token required |
 | `GET`          | `/api/visit`      | Cookie sayacı         | Cookie counter       |
 | `GET`          | `/openapi.json`   | OpenAPI 3.0 dokümanı  | OpenAPI 3.0 document |
+| `GET`          | `/panel`          | İzleme paneli (anahtarlı) | Monitoring panel (key required) |
 
 
 ```bash
@@ -129,6 +132,10 @@ curl -i http://localhost:8080/api/visit
 
 # OpenAPI dokumani / OpenAPI document
 curl http://localhost:8080/openapi.json
+
+# Izleme paneli (anahtarli) / monitoring panel (key required)
+curl "http://localhost:8080/panel?key=pixel-secret"
+curl "http://localhost:8080/panel/stats?key=pixel-secret"
 ```
 
 
@@ -205,6 +212,10 @@ app.use(new pixel.BodyLimit(1024 * 1024).middleware());
 // OpenAPI dokumani / OpenAPI document
 app.describe("GET", "/api/users", "Kullanici listesi / List users", ["users"]);
 app.docs(); // GET /openapi.json
+
+// Izleme paneli / monitoring panel
+// Tarayici / Browser: http://localhost:8080/panel?key=pixel-secret
+app.panel("/panel", "Pixel Api Panel", "pixel-secret");
 ```
 
 

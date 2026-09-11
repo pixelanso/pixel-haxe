@@ -167,7 +167,7 @@ class Pixel {
      * Framework surumu / Framework version string.
      */
     public static function versionString():String {
-        return "0.3.0";
+        return "0.4.0";
     }
 
     /**
@@ -213,6 +213,21 @@ class Pixel {
         staticDir = dir;
         staticPrefix = prefix == null ? "/" : prefix;
         return this;
+    }
+
+    /**
+     * Gomulu izleme panelini kurar ve middleware olarak zincire ekler.
+     * Installs the built-in monitoring panel and adds it as middleware.
+     * ```haxe
+     * app.panel("/panel", "pixel-secret");
+     * // Tarayici / Browser:  http://localhost:8080/panel?key=pixel-secret
+     * // JSON ozeti / summary: http://localhost:8080/panel/stats
+     * ```
+     */
+    public function panel(?path:String = "/panel", ?title:String = null, ?token:String = null):Panel {
+        var p = new Panel(path, title, token);
+        use(p.middleware());
+        return p;
     }
 
     // -------------------------------------------------------------- server

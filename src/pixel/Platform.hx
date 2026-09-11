@@ -50,6 +50,23 @@ class Platform {
         #end
     }
 
+    /**
+     * Surecin RSS bellek kullanimi MB cinsinden; hedef desteklemiyorsa -1.
+     * Process RSS memory usage in MB; -1 when the target does not support it.
+     */
+    public static function memoryMb():Float {
+        #if js
+            try {
+                return untyped __js__('Math.round(process.memoryUsage().rss / 1048576 * 10) / 10');
+            } catch (e:Dynamic) {
+                return -1;
+            }
+        #else
+            return -1;
+        #end
+    }
+
+
     public static function isDirectory(p:String):Bool {
         #if js
             return untyped __js__('typeof require === "function" && require("node:fs").existsSync(p) ? require("node:fs").statSync(p).isDirectory() : false', p);

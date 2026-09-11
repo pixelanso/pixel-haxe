@@ -178,6 +178,35 @@ class TestCore {
         appLog.handle(new pixel.Request("GET", "/ok"), resLogged);
         check("logger istegi engellememeli / logger must not block requests", resLogged.statusCode == 200);
 
+        // Izleme paneli / monitoring panel
+        var appPanel = new pixel.Pixel();
+        appPanel.panel("/panel", "Test Panel", "gizli");
+        var pRes = new pixel.Response();
+        appPanel.handle(new pixel.Request("GET", "/panel?key=gizli"), pRes);
+        check("panel anahtarli giris -> 200 / panel with key -> 200", pRes.statusCode == 200);
+        var html = pRes.body.getString(0, pRes.body.length);
+        check("panel HTML dondurmeli / panel must return HTML",
+            pRes.headers.get("Content-Type").indexOf("text/html") >= 0 && html.indexOf("Test Panel") >= 0);
+        var p401 = new pixel.Response();
+        appPanel.handle(new pixel.Request("GET", "/panel"), p401);
+        check("panel anahtarsiz -> 401 / panel without key -> 401", p401.statusCode == 401);
+        var pStats = new pixel.Response();
+        appPanel.handle(new pixel.Request("GET", "/panel/stats?key=gizli"), pStats);
+        check("panel stats JSON sunmali / panel stats must serve JSON",
+            pStats.statusCode == 200 && pStats.body.getString(0, pStats.body.length).indexOf("total") >= 0);
+        var pStatsNoKey = new pixel.Response();
+        appPanel.handle(new pixel.Request("GET", "/panel/stats"), pStatsNoKey);
+        check("stats anahtarsiz -> 401 / stats without key -> 401", pStatsNoKey.statusCode == 401);
+        var pApi = new pixel.Request("GET", "/api/data", null);
+        appPanel.handle(pApi, new pixel.Response());
+        appPanel.handle(new pixel.Request("GET", "/api/data", null), new pixel.Response());
+        var pStats2 = new pixel.Response();
+        appPanel.handle(new pixel.Request("GET", "/panel/stats?key=gizli"), pStats2);
+        var statsBody = pStats2.body.getString(0, pStats2.body.length);
+        check("panel istekleri saymali / panel must count requests",
+            statsBody.indexOf("\"total\": 2") >= 0 || statsBody.indexOf("\"total\" : 2") >= 0);
+        check("panel kendi isteklerini saymamali / panel must not count itself", statsBody.indexOf("/panel") < 0);
+
         Sys.println("Tum testler gecti / All tests passed");
 
 

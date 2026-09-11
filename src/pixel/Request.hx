@@ -29,7 +29,6 @@ class Request {
 
     public function new(?method:String = "GET", ?path:String = "/", ?headers:Map<String, String> = null, ?rawBody:String = "") {
         this.method = method == null ? "GET" : method;
-        this.path = path == null ? "/" : path;
         this.headers = headers == null ? new Map() : headers;
         this.rawBody = rawBody == null ? "" : rawBody;
         this.httpVersion = "HTTP/1.1";
@@ -37,8 +36,33 @@ class Request {
         this.params = new Map();
         this.cookies = new Map();
         this.ip = "";
+        splitPathAndQuery(path == null ? "/" : path);
         parseCookies();
     }
+
+    /**
+     * Yolu path + query olarak ayirir: `/s?x=1` -> path `/s`, query `x=1`.
+     * Splits a target into path and query: `/s?x=1` -> path `/s`, query `x=1`.
+     */
+    function splitPathAndQuery(target:String):Void {
+        var qIdx = target.indexOf("?");
+        this.path = qIdx < 0 ? target : target.substr(0, qIdx);
+        if (this.path == "") this.path = "/";
+        var qs = qIdx < 0 ? "" : target.substr(qIdx + 1);
+        if (qs == "") return;
+        for (pair in qs.split("&")) {
+            if (pair == "") continue;
+            var ei = pair.indexOf("=");
+            var k = ei >= 0 ? pair.substr(0, ei) : pair;
+            var v = ei >= 0 ? pair.substr(ei + 1) : "";
+            try {
+                query.set(StringTools.urlDecode(k), StringTools.urlDecode(v));
+            } catch (e:Dynamic) {
+                query.set(k, v);
+            }
+        }
+    }
+
 
     public function param(name:String):String {
         return params.get(name) != null ? params.get(name) : "";

@@ -49,6 +49,7 @@ class Main {
                     v1Ping: "GET /api/v1/ping",
                     v1Time: "GET /api/v1/time",
                     adminStats: "GET /admin/stats (Bearer token gerekli / Bearer token required)",
+                    panel: "GET /panel?key=pixel-secret",
                     openapi: "GET /openapi.json"
                 }
             });
@@ -145,7 +146,13 @@ class Main {
             res.json({visits: count});
         });
 
-        // 9) OpenAPI dokumani / OpenAPI document
+        // 9) Izleme paneli / monitoring panel
+        //    Tarayici / Browser:  http://localhost:8080/panel?key=pixel-secret
+        //    JSON ozeti / summary: http://localhost:8080/panel/stats
+        app.panel("/panel", "Pixel Api Panel", "pixel-secret");
+        app.describe("GET", "/panel", "Izleme paneli / Monitoring panel");
+
+        // 10) OpenAPI dokumani / OpenAPI document
         //    Swagger UI gibi aracta: https://editor.swagger.io adresinde acin
         //    Try it in a tool such as Swagger UI at https://editor.swagger.io
         app.describe("GET", "/health", "Saglik kontrolu / Health check");
@@ -155,7 +162,7 @@ class Main {
         app.describe("DELETE", "/api/users/:id", "Kullaniciyi sil / Delete a user", ["users"]);
         app.docs();
 
-        // 10) Ozel 404 isleyicisi / custom 404 handler
+        // 11) Ozel 404 isleyicisi / custom 404 handler
         app.onNotFound(function(req, res) {
             res.status(404).json({
                 error: "Not Found / Bulunamadi",
@@ -164,10 +171,10 @@ class Main {
             });
         });
 
-        // 11) Statik dosyalar / Static files (public/)
+        // 12) Statik dosyalar / Static files (public/)
         app.serveStatic("public");
 
-        // 12) Dinle / Listen
+        // 13) Dinle / Listen
         var port = Std.parseInt(Platform.getEnv("PORT"));
         if (port == null) port = 8080;
         Platform.println("Pixel Api configured / konfigurasyonu hazir. PORT=" + port);
