@@ -2,11 +2,11 @@
     "name": "pixel-haxe",
     "url": "https://github.com/pixelanso/pixel-haxe",
     "license": "MIT",
-    "tags": ["http", "api", "framework", "server", "router", "middleware", "rest", "cors", "json", "auth", "rate-limit", "cookies", "openapi", "logger", "panel", "metrics"],
-    "description": "Pixel Api — Hafif ve cok hedefli Haxe API mikro-framework'u. A lightweight, multi-target Haxe API micro-framework. Router, route groups, middleware, CORS, JSON, cookies, Bearer auth, rate limiting, OpenAPI docs, live metrics panel and static file serving; runs on Node.js, PHP, Neko and HashLink.",
-    "version": "0.4.0",
+    "tags": ["http", "api", "framework", "server", "router", "middleware", "rest", "cors", "json", "auth", "rate-limit", "cookies", "openapi", "logger", "panel", "metrics", "security", "etag", "validation", "scheduler"],
+    "description": "Pixel Api — Hafif ve cok hedefli Haxe API mikro-framework'u. A lightweight, multi-target Haxe API micro-framework. Router, route groups, middleware, CORS, JSON, cookies, Bearer auth, rate limiting, security headers, ETag caching, validation, scheduled tasks, OpenAPI docs, live metrics panel and static file serving; runs on Node.js, PHP, Neko and HashLink.",
+    "version": "0.5.0",
     "classPath": "src",
     "contributors": ["pixelanso"],
-    "releasenote": "v0.4.0: tarayici tabanli canli izleme paneli (app.panel: toplam istek, durum kodlari, en yavas yollar, bellek) ve yetki anahtari destegi. Browser-based live monitoring panel (app.panel: total requests, status codes, slowest paths, memory) with access key support.",
+    "releasenote": "v0.5.0: guvenlik basliklari (Helmet benzeri), ETag/If-None-Match onbellek (304), kural tabanli istek dogrulama (422) ve zamanlanmis arka plan gorevleri. Helmet-like security headers, ETag/If-None-Match caching (304), rule-based request validation (422) and scheduled background tasks.",
     "dependencies": {}
 }

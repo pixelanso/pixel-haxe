@@ -207,7 +207,78 @@ class TestCore {
             statsBody.indexOf("\"total\": 2") >= 0 || statsBody.indexOf("\"total\" : 2") >= 0);
         check("panel kendi isteklerini saymamali / panel must not count itself", statsBody.indexOf("/panel") < 0);
 
+        // ---- v0.5.0: Security / ETag / Validator / Scheduler ----
+
+        // guvenlik basliklari / security headers
+        var sec = new pixel.Security();
+        var secRes = new pixel.Response();
+        sec.apply(secRes);
+        check("nosniff eklenmeli / nosniff added", secRes.headers.get("X-Content-Type-Options") == "nosniff");
+        check("frame DENY olmali / frame must be DENY", secRes.headers.get("X-Frame-Options") == "DENY");
+        check("referrer policy eklendi / referrer policy added", secRes.headers.get("Referrer-Policy") == "no-referrer");
+        var secRes2 = new pixel.Response();
+        new pixel.Security({hsts: 31536000, csp: "default-src 'self'", frame: null}).apply(secRes2);
+        check("hsts secenege saygi duymali / hsts honors option",
+            secRes2.headers.get("Strict-Transport-Security").indexOf("31536000") >= 0);
+        check("csp secenege saygi duymali / csp honors option",
+            secRes2.headers.get("Content-Security-Policy") == "default-src 'self'");
+        check("frame null ise baslik yok / no frame header when null", secRes2.headers.get("X-Frame-Options") == null);
+        var powRes = new pixel.Response();
+        powRes.header("X-Powered-By", "secret");
+        new pixel.Security().apply(powRes);
+        check("X-Powered-By kaldirilmali / X-Powered-By removed", powRes.headers.get("X-Powered-By") == null);
+
+        // etag: ilk istek 200 + ETag, If-None-Match ile 304
+        var appEtag = new pixel.Pixel();
+        appEtag.use(new pixel.Etag().middleware());
+        appEtag.get("/res", function(req, res) { res.json({n: 1}); });
+        var r1 = new pixel.Response();
+        appEtag.handle(new pixel.Request("GET", "/res"), r1);
+        check("etag basligi set edilmeli / ETag header must be set", r1.headers.get("ETag") != null);
+        check("etag zayif format / weak etag format", StringTools.startsWith(r1.headers.get("ETag"), "W/\""));
+        var r2 = new pixel.Response();
+        appEtag.handle(new pixel.Request("GET", "/res", ["If-None-Match" => r1.headers.get("ETag")]), r2);
+        check("eslesen etag -> 304 / matching etag -> 304", r2.statusCode == 304);
+        check("304 govdesi bos / 304 body empty", r2.body.length == 0);
+        var r3 = new pixel.Response();
+        appEtag.handle(new pixel.Request("GET", "/res", ["If-None-Match" => 'W/"00000000000000000000000000000000"']), r3);
+        check("eslesmeyen etag -> 200 / non-matching etag -> 200", r3.statusCode == 200);
+        var rPost = new pixel.Response();
+        appEtag.handle(new pixel.Request("POST", "/res"), rPost);
+        check("POST icin etag yok / no etag for POST", rPost.headers.get("ETag") == null);
+
+        // validator: kurallar / rules
+        var rules = {
+            name: {required: true, type: "string", min: 2, max: 60},
+            age: {type: "int", min: 0, max: 150},
+            role: {type: "string", oneOf: ["user", "admin"]}
+        };
+        check("gecerli veri hatasiz / valid data has no errors",
+            pixel.Validator.check({name: "Deniz", age: 29, role: "user"}, rules).length == 0);
+        var errs = pixel.Validator.check({name: "", age: 200, role: "robot"}, rules);
+        check("eksik/yanlis alanlar yakalanmali / missing/wrong fields caught", errs.length == 3);
+        check("sayi olmayan yas reddedilir / non-numeric age rejected",
+            pixel.Validator.check({name: "Ok", age: "abc"}, rules).length > 0);
+        check("kisa isim reddedilir / short name rejected",
+            pixel.Validator.check({name: "x"}, rules).length > 0);
+        var vRes = new pixel.Response();
+        check("rejectIfInvalid gecersizde true / rejectIfInvalid true when invalid",
+            pixel.Validator.rejectIfInvalid(vRes, {age: 5}, rules) && vRes.statusCode == 422);
+
+        // scheduler: senkron tick / synchronous tick
+        var sch = new pixel.Scheduler();
+        var counter = 0;
+        sch.every(10, function() { counter++; }, "test-task");
+        var ran1 = sch.tick(100);
+        check("ilk tick gorevi calistirmali / first tick must run the task", ran1 == 1 && counter == 1);
+        var ran2 = sch.tick(101);
+        check("aralik dolmadan tekrar calismamali / must not run before interval", ran2 == 0 && counter == 1);
+        var ran3 = sch.tick(110);
+        check("aralik sonunda tekrar calismali / must run again after interval", ran3 == 1 && counter == 2);
+        check("runs sayaci dogru / runs counter correct", sch.tasks[0].runs == 2);
+
         Sys.println("Tum testler gecti / All tests passed");
+
 
 
     }

@@ -23,14 +23,28 @@ class Main {
         // 1) Istek loglama / request logging
         app.use(new pixel.Logger().middleware());
 
-        // 2) Global hiz siniri / global rate limit: dakikada 240 istek
+        // 2) Guvenlik basliklari / security headers (Helmet benzeri / Helmet-like)
+        app.use(new pixel.Security({hsts: 15552000}).middleware());
+
+        // 3) Global hiz siniri / global rate limit: dakikada 240 istek
         app.use(new pixel.RateLimit(240, 60).middleware());
 
-        // 3) Govde boyutu siniri / body size limit: 1 MB
+        // 4) Govde boyutu siniri / body size limit: 1 MB
         app.use(new pixel.BodyLimit(1024 * 1024).middleware());
 
-        // 4) CORS (herkese acik ve preflight dahil / open and including preflight)
+        // 5) ETabanli onbellek / ETag-based caching (If-None-Match -> 304)
+        app.use(new pixel.Etag().middleware());
+
+        // 6) CORS (herkese acik ve preflight dahil / open and including preflight)
         app.cors();
+
+        // 7) Arka plan gorevlisi / background task: her 60 saniyede bir
+        var scheduler = new pixel.Scheduler();
+        scheduler.every(60, function() {
+            Platform.println("[heartbeat] users=" + users.length + " uptime=" + Std.int(Platform.time()));
+        }, "heartbeat");
+        scheduler.start();
+
 
         // 5) Rotalar / Routes
         app.get("/", function(req, res) {
@@ -50,7 +64,8 @@ class Main {
                     v1Time: "GET /api/v1/time",
                     adminStats: "GET /admin/stats (Bearer token gerekli / Bearer token required)",
                     panel: "GET /panel?key=pixel-secret",
-                    openapi: "GET /openapi.json"
+                    openapi: "GET /openapi.json",
+                    taskStats: "GET /api/tasks (arka plan gorevleri / background tasks)"
                 }
             });
         });
@@ -82,15 +97,16 @@ class Main {
                 res.status(400).json({error: "Gecerli bir JSON body gonderilmeli / A valid JSON body is required"});
                 return;
             }
-            var name = Reflect.field(body, "name");
-            if (name == null || name == "") {
-                res.status(422).json({error: "'name' alani zorunludur / 'name' field is required"});
-                return;
-            }
-            var u = {id: Std.string(users.length + 1), name: name, role: "user"};
+            // 8) Dogrulama / validation (kural tabanli, 422 / rule-based)
+            if (pixel.Validator.rejectIfInvalid(res, body, {
+                name: {required: true, type: "string", min: 2, max: 60},
+                role: {type: "string", oneOf: ["user", "admin", "moderator"]}
+            })) return;
+            var u = {id: Std.string(users.length + 1), name: Reflect.field(body, "name"), role: Reflect.field(body, "role") == null ? "user" : Reflect.field(body, "role")};
             users.push(u);
             res.status(201).json(u);
         });
+
 
         app.put("/api/users/:id", function(req, res) {
             var id = req.param("id");
@@ -146,13 +162,18 @@ class Main {
             res.json({visits: count});
         });
 
-        // 9) Izleme paneli / monitoring panel
+        // 9) Arka plan gorevleri / background tasks
+        app.get("/api/tasks", function(req, res) {
+            res.json(scheduler.tasks);
+        });
+
+        // 10) Izleme paneli / monitoring panel
         //    Tarayici / Browser:  http://localhost:8080/panel?key=pixel-secret
         //    JSON ozeti / summary: http://localhost:8080/panel/stats
         app.panel("/panel", "Pixel Api Panel", "pixel-secret");
         app.describe("GET", "/panel", "Izleme paneli / Monitoring panel");
 
-        // 10) OpenAPI dokumani / OpenAPI document
+        // 11) OpenAPI dokumani / OpenAPI document
         //    Swagger UI gibi aracta: https://editor.swagger.io adresinde acin
         //    Try it in a tool such as Swagger UI at https://editor.swagger.io
         app.describe("GET", "/health", "Saglik kontrolu / Health check");
@@ -160,9 +181,10 @@ class Main {
         app.describe("GET", "/api/users/:id", "Tek kullanici / Get one user", ["users"]);
         app.describe("POST", "/api/users", "Yeni kullanici / Create a user", ["users"]);
         app.describe("DELETE", "/api/users/:id", "Kullaniciyi sil / Delete a user", ["users"]);
+        app.describe("GET", "/api/tasks", "Arka plan gorevleri / Background tasks", ["tasks"]);
         app.docs();
 
-        // 11) Ozel 404 isleyicisi / custom 404 handler
+        // 12) Ozel 404 isleyicisi / custom 404 handler
         app.onNotFound(function(req, res) {
             res.status(404).json({
                 error: "Not Found / Bulunamadi",
@@ -171,10 +193,10 @@ class Main {
             });
         });
 
-        // 12) Statik dosyalar / Static files (public/)
+        // 13) Statik dosyalar / Static files (public/)
         app.serveStatic("public");
 
-        // 13) Dinle / Listen
+        // 14) Dinle / Listen
         var port = Std.parseInt(Platform.getEnv("PORT"));
         if (port == null) port = 8080;
         Platform.println("Pixel Api configured / konfigurasyonu hazir. PORT=" + port);

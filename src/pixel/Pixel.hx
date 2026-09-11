@@ -167,7 +167,7 @@ class Pixel {
      * Framework surumu / Framework version string.
      */
     public static function versionString():String {
-        return "0.4.0";
+        return "0.5.0";
     }
 
     /**

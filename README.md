@@ -58,6 +58,14 @@ targets and run it unchanged.
   OpenAPI 3.0 — generate `openapi.json` with `app.docs()`, route summaries with `app.describe()`
 - **İzleme paneli** — `app.panel()` ile tarayıcı tabanlı canlı metrik paneli (toplam istek, durum kodları, en yavaş yollar, bellek)
   monitoring panel — browser-based live metrics with `app.panel()` (total requests, status codes, slowest paths, memory)
+- **Güvenlik başlıkları** — `Security` ile Helmet benzeri `X-Frame-Options`, `nosniff`, `HSTS`, `Referrer-Policy`
+  security headers — Helmet-like `X-Frame-Options`, `nosniff`, `HSTS`, `Referrer-Policy` with `Security`
+- **ETag önbelleği** — MD5 tabanlı `ETag` + `If-None-Match` ile 304 yanıtı
+  ETag caching — MD5 based `ETag` + `If-None-Match` answering 304
+- **Doğrulama** — `Validator` ile kural tabanlı JSON gövde kontrolü, hatalıysa 422
+  validation — rule-based JSON body checking with `Validator`, 422 on failure
+- **Zamanlanmış görevler** — `Scheduler` ile arka planda periyodik işler, `GET /api/tasks` ile durum
+  scheduled tasks — periodic background jobs with `Scheduler`, status via `GET /api/tasks`
 - **405 + Allow** — yanlış metot için doğru durum kodu ve `Allow` başlığı
   correct status code and `Allow` header for wrong methods
 - **Özel işleyiciler** — `app.onNotFound()`, `app.onMethodNotAllowed()`, `app.onError()`
@@ -107,6 +115,7 @@ PORT=3000 node bin/Node/server.js
 | `GET`          | `/api/visit`      | Cookie sayacı         | Cookie counter       |
 | `GET`          | `/openapi.json`   | OpenAPI 3.0 dokümanı  | OpenAPI 3.0 document |
 | `GET`          | `/panel`          | İzleme paneli (anahtarlı) | Monitoring panel (key required) |
+| `GET`          | `/api/tasks`      | Zamanlanmış görevler  | Scheduled tasks      |
 
 
 ```bash
@@ -216,6 +225,26 @@ app.docs(); // GET /openapi.json
 // Izleme paneli / monitoring panel
 // Tarayici / Browser: http://localhost:8080/panel?key=pixel-secret
 app.panel("/panel", "Pixel Api Panel", "pixel-secret");
+
+// Guvenlik basliklari / security headers (Helmet benzeri)
+app.use(new pixel.Security().middleware());
+
+// ETag + If-None-Match -> 304 / conditional caching
+app.use(new pixel.Etag().middleware());
+
+// Zamanlanmis gorev / scheduled background task
+var scheduler = new pixel.Scheduler();
+scheduler.every("heartbeat", 60, function() {
+    Platform.println("kalp atisi / heartbeat");
+});
+app.get("/api/tasks", function(req, res) { res.json(scheduler.tasks); });
+
+// Dogrulama / validation (hataliysa 422 / 422 when invalid)
+var body = req.jsonBody();
+if (pixel.Validator.rejectIfInvalid(res, body, {
+    name: {required: true, type: "string", min: 2, max: 60},
+    age: {type: "int", min: 0, max: 150}
+})) return;
 ```
 
 
@@ -244,6 +273,10 @@ haxe run.hxml           # kısayol / shortcut (Node target)
   Cookie support (`req.cookie()`, `res.setCookie()`)
 - [x] OpenAPI/Swagger dokümantasyon üretici
   OpenAPI/Swagger documentation generator
+- [x] İzleme paneli (canlı metrikler)
+  Monitoring panel (live metrics)
+- [x] Güvenlik başlıkları, ETag önbelleği, doğrulama (422), zamanlanmış görevler
+  Security headers, ETag caching, validation (422), scheduled tasks
 - [ ] Query + JSON body'nin resmi request nesnesinde birleştirilmesi
   Unified query + JSON body request object
 - [ ] WebSocket desteği
